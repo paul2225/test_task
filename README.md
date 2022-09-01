@@ -14,6 +14,13 @@
  - Отправка сообщения
  > curl -L -X POST http://<ip_address>:79/message -F username="someUser" -F text="<text>" -H authorization:Bearer_<token>
  
+ # pgAdmin
+ - Войти в pgAdmin через браузер по адресу с логином qwe@qwe.com и паролем qwerty
+ > http://<ip_address>:8000/browser/
+ - Правой кнопкой мыши по servers > create > server...
+ - Ввести в поля hostname, username, password
+ > postgres
+ 
  # Возможные ошибки
  - Если возникает ошибка при запуске docker-compose необходимо установить переменную среды командой 
  > export DOCKER_BUILDKIT=0
