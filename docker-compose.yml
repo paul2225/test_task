@@ -1,0 +1,72 @@
+services:
+  postgres:
+    build:
+      context: postgres
+      dockerfile: Dockerfile
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=test_task
+      - POSTGRES_PASSWORD=postgres
+      - TZ=Europe/Moscow
+    volumes:
+      - "db-data:/var/lib/postgresql/data"
+    restart: unless-stopped 
+  
+  app:
+    build:
+      context: server
+      dockerfile: Dockerfile
+    environment:
+      - PORT=8091
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres/test_task
+      - JS_URL=http://localhost
+      - "JAVA_OPTS=-Xms1024m -Xmx2048m"
+      - TZ=Europe/Moscow
+    image: paul2225/test_task
+    ports:
+      - 79:79
+    depends_on:
+      - postgres
+    restart: unless-stopped  
+
+  pgadmin:
+    image: dpage/pgadmin4
+    depends_on:
+      - postgres
+    ports:
+      - "8000:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: qwe@qwe.com
+      PGADMIN_DEFAULT_PASSWORD: qwerty
+    volumes:
+     - "pgadmin-data:/var/lib/pgadmin"
+    restart: unless-stopped 
+    
+  pgbackups:
+    container_name: backup
+    image: prodrigestivill/postgres-backup-local
+    restart: unless-stopped
+    volumes:
+      - ./backup:/backups
+    links:
+      - postgres
+    depends_on:
+      - postgres
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=test_task
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_EXTRA_OPTS=-Z9 --schema=public --blobs
+      - SCHEDULE=@every 4h00m00s
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
+      - HEALTHCHECK_PORT=81
+      - TZ=Europe/Moscow
+      
+volumes:
+   db-data:
+   pgadmin-data:
